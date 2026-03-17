@@ -1,8 +1,8 @@
 import { Geist, Geist_Mono, Noto_Serif } from "next/font/google"
 
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/src/_components/theme-provider"
+import { cn } from "@/src/_lib/utils";
 
 const notoSerif = Noto_Serif({subsets:['latin'],variable:'--font-serif'});
 
