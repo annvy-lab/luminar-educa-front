@@ -5,6 +5,9 @@ import { Geist, Geist_Mono, Noto_Serif } from "next/font/google";
 import { ThemeProvider } from "@/src/_components/theme-provider";
 import { cn } from "@/src/_lib/utils";
 
+import Footer from "../_components/common/footer";
+import Navbar from "../_components/common/navbar";
+
 const notoSerif = Noto_Serif({ subsets: ["latin"], variable: "--font-serif" });
 
 const fontSans = Geist({
@@ -36,7 +39,11 @@ export default function RootLayout({
       )}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
