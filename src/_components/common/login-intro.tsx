@@ -6,13 +6,14 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 
 const LoginIntro = () => {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pt-2 pb-10 lg:flex-row lg:items-center lg:justify-between">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pb-10 pt-2 lg:flex-row lg:items-center lg:justify-between">
       <section className="flex max-w-2xl flex-col gap-6">
         <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-muted/40 px-4 py-1.5 text-sm text-muted-foreground">
           <Sparkles size={16} className="text-primary" strokeWidth={1.7} />
@@ -20,7 +21,7 @@ const LoginIntro = () => {
         </div>
 
         <div className="space-y-4">
-          <h1 className="text-4xl leading-tight font-bold tracking-tight text-foreground lg:text-5xl">
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground lg:text-5xl">
             Bem-vindo à <span className="text-primary">Luminar Educa...</span>
           </h1>
 
@@ -136,10 +137,12 @@ const LoginIntro = () => {
               </div>
             </div>
 
-            <Button className="w-full gap-2" size="lg">
-              Entrar na Plataforma
-              <ArrowRight size={18} />
-            </Button>
+            <Link href="/login" className="w-full">
+              <Button className="w-full gap-2" size="lg">
+                Fazer Login na Plataforma
+                <ArrowRight size={18} />
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>

@@ -39,6 +39,10 @@ function ThemeHotkey() {
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      if (isTypingTarget(event.target)) {
+        return
+      }
+
       if (event.defaultPrevented || event.repeat) {
         return
       }
@@ -47,11 +51,7 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
-
-      if (isTypingTarget(event.target)) {
+      if (!event.key || event.key.toLowerCase() !== "d") {
         return
       }
 
