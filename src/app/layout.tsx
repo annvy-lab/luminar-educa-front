@@ -7,6 +7,9 @@ import { Toaster } from "@/src/_components/ui/sonner";
 import { AuthProvider } from "@/src/_contexts/auth-context";
 import { cn } from "@/src/_lib/utils";
 
+import Footer from "../_components/common/footer";
+import Navbar from "../_components/common/navbar";
+
 const notoSerif = Noto_Serif({ subsets: ["latin"], variable: "--font-serif" });
 
 const fontSans = Geist({
@@ -34,13 +37,15 @@ export default function RootLayout({
         fontMono.variable,
         "font-serif",
         notoSerif.variable,
-        "text-base"
+        "text-base",
       )}
     >
       <body>
         <AuthProvider>
           <ThemeProvider>
+            <Navbar />
             {children}
+            <Footer />
             <Toaster />
           </ThemeProvider>
         </AuthProvider>
