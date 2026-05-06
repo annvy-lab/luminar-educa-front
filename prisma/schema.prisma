@@ -1,0 +1,287 @@
+// ============================================================
+// Luminar Educa — Schema Prisma
+// Banco de dados: PostgreSQL
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // DATABASE_URL  → pooled URL do Neon (com ?pgbouncer=true)
+  // DATABASE_URL_UNPOOLED → direct URL do Neon (para migrations)
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+/// Status do cadastro do professor. Fluxo: PENDING → APPROVED | REJECTED.
+enum TeacherStatus {
+  PENDING   // aguardando análise do admin
+  APPROVED  // perfil ativo e visível para alunos
+  REJECTED  // reprovado (diploma inválido, suspeito, etc.)
+}
+
+/// Papel do usuário no sistema.
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+/// Status de uma sessão/aula agendada.
+enum SessionStatus {
+  SCHEDULED   // confirmada, aguardando horário
+  ONGOING     // em andamento
+  COMPLETED   // finalizada com sucesso
+  CANCELLED   // cancelada por qualquer parte
+  NO_SHOW     // aluno ou professor não compareceu
+}
+
+/// Status de um pagamento.
+enum PaymentStatus {
+  PENDING     // aguardando confirmação (ex.: PIX gerado mas não pago)
+  SUCCEEDED   // pago com sucesso
+  FAILED      // falhou no processamento
+  REFUNDED    // estornado
+  CANCELLED   // cancelado antes de processar
+}
+
+/// Métodos de pagamento suportados via Stripe.
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+}
+
+/// Status de uma avaliação/revisão.
+enum ReviewStatus {
+  VISIBLE   // publicada e visível
+  HIDDEN    // ocultada por moderação
+}
+
+// USER — conta base compartilhada entre papéis
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  avatarUrl String?  // foto vinda do Google OAuth
+  role      UserRole @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relações
+  studentProfile  Student?
+  teacherProfile  Teacher?
+  notifications   Notification[]
+
+  @@map("users")
+}
+
+// STUDENT — extensão de User para alunos
+model Student {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  bio       String?  // apresentação opcional
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings  Booking[] // todas as aulas que o aluno agendou
+
+  @@map("students")
+}
+
+// TEACHER — extensão de User para professores
+model Teacher {
+  id               String        @id @default(cuid())
+  userId           String        @unique
+  bio              String?
+  status           TeacherStatus @default(PENDING)
+  // Definido pelo professor no formulário de perfil (após o cadastro inicial)
+  hourlyRateCents  Int?          // valor por hora em centavos (ex.: 5000 = R$ 50,00)
+
+  // Enviado pelo professor no formulário de perfil antes da aprovação do admin
+  diplomaFileUrl   String?
+
+  /// Notas internas do admin ao aprovar ou rejeitar (ex.: motivo da rejeição)
+  adminNotes       String?
+  reviewedAt       DateTime?     // quando o admin tomou a decisão
+  reviewedById     String?       // id do admin que revisou
+
+  /// Credenciais Stripe — professor recebe pagamentos via Stripe Connect
+  stripeAccountId  String?       @unique // Stripe Connect account ID (ex.: acct_...)
+  payoutsEnabled   Boolean       @default(false)
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy       Admin?        @relation("TeacherReviewer", fields: [reviewedById], references: [id])
+  subjects         TeacherSubject[]  // disciplinas que o professor leciona
+  availabilities   Availability[]    // horários disponíveis
+  bookings         Booking[]         // aulas agendadas com este professor
+  reviews          Review[]          // avaliações recebidas
+
+  @@map("teachers")
+}
+
+// ADMIN — moderadores/administradores da plataforma
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+
+  // relação reversa: quais professores este admin revisou
+  reviewedTeachers Teacher[] @relation("TeacherReviewer")
+
+  @@map("admins")
+}
+
+// SUBJECT — disciplinas cadastradas na plataforma
+model Subject {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  /// Ícone ou slug para exibição (ex.: "math", "code")
+  iconSlug    String?
+  createdAt   DateTime @default(now())
+
+  teachers    TeacherSubject[]
+  bookings    Booking[]
+
+  @@map("subjects")
+}
+
+// TEACHER_SUBJECT — relação N:N entre professor e disciplinas
+model TeacherSubject {
+  teacherId String
+  subjectId String
+  /// Nível de proficiência declarado pelo professor.
+  /// Útil para futuras filtragens (ex.: "Iniciante", "Intermediário", "Avançado")
+  level     String?
+
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, subjectId])
+  @@map("teacher_subjects")
+}
+
+// AVAILABILITY — slots de horário do professor
+model Availability {
+  id          String   @id @default(cuid())
+  teacherId   String
+  /// Dia da semana (0 = domingo … 6 = sábado). null = data específica.
+  dayOfWeek   Int?
+  /// Data específica (para datas avulsas fora da recorrência semanal)
+  specificDate DateTime?
+  startTime   String   // formato "HH:mm" (ex.: "09:00")
+  endTime     String   // formato "HH:mm" (ex.: "10:00")
+  /// Recorrente toda semana?
+  isRecurring Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  teacher     Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("availabilities")
+}
+
+// BOOKING — agendamento de uma aula
+model Booking {
+  id              String        @id @default(cuid())
+  studentId       String
+  teacherId       String
+  subjectId       String
+  status          SessionStatus @default(SCHEDULED)
+
+  scheduledAt     DateTime      // data+hora de início da aula (UTC)
+  durationMinutes Int           @default(60) // duração em minutos
+  /// Link da reunião do Google Meet gerado automaticamente
+  meetLink        String?
+  /// ID do evento no Google Calendar (para cancelamento/atualização)
+  googleEventId   String?
+
+  /// Preço total cobrado nesta aula, em centavos
+  totalAmountCents Int
+
+  /// Notas ou pedido específico do aluno para o professor
+  studentNotes    String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  student         Student  @relation(fields: [studentId], references: [id])
+  teacher         Teacher  @relation(fields: [teacherId], references: [id])
+  subject         Subject  @relation(fields: [subjectId], references: [id])
+  payment         Payment?
+  review          Review?
+
+  @@map("bookings")
+}
+
+// PAYMENT — pagamento de um agendamento via Stripe
+model Payment {
+  id              String        @id @default(cuid())
+  bookingId       String        @unique
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  amountCents     Int           // total cobrado
+  /// Taxa da plataforma retida (ex.: 15% do amountCents)
+  platformFeeCents Int          @default(0)
+  /// Repasse ao professor (amountCents - platformFeeCents)
+  teacherPayoutCents Int        @default(0)
+
+  // Referências do Stripe
+  stripePaymentIntentId String?  @unique // para cartão de crédito
+  stripePixChargeId     String?  @unique // para PIX (charge ID do Stripe)
+  stripeTransferId      String?  @unique // repasse ao professor via Stripe Connect
+
+  paidAt          DateTime?
+  refundedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  booking         Booking       @relation(fields: [bookingId], references: [id])
+
+  @@map("payments")
+}
+
+// REVIEW — avaliação pós-aula
+model Review {
+  id        String       @id @default(cuid())
+  bookingId String       @unique
+  teacherId String
+  rating    Int          // 1–5
+  comment   String?
+  status    ReviewStatus @default(VISIBLE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+
+  @@map("reviews")
+}
+
+// NOTIFICATION — avisos in-app
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  /// Tipo livre para o front filtrar (ex.: "BOOKING", "PAYMENT", "REVIEW", "APPROVAL")
+  type      String?
+  /// Link opcional para redirecionar ao clicar na notificação
+  actionUrl String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
