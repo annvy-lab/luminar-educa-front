@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { useAuth } from "@/src/_contexts/auth-context";
+import { useAuth } from "@/_contexts/auth-context";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "../ui/sheet";
@@ -162,3 +162,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

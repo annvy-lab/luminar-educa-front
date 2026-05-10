@@ -5,11 +5,11 @@ import { useTheme } from "next-themes";
 import * as React from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/src/_components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/_components/ui/card";
-import { Input } from "@/src/_components/ui/input";
-import { Switch } from "@/src/_components/ui/switch";
-import { useAuth } from "@/src/_contexts/auth-context";
+import { Button } from "@/_components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/_components/ui/card";
+import { Input } from "@/_components/ui/input";
+import { Switch } from "@/_components/ui/switch";
+import { useAuth } from "@/_contexts/auth-context";
 
 export function ConfiguracoesClient() {
   const { user } = useAuth();
@@ -179,3 +179,4 @@ export function ConfiguracoesClient() {
     </div>
   );
 }
+

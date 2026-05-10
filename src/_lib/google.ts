@@ -49,3 +49,4 @@ export function getCalendarClient(accessToken: string) {
   const auth = getOAuth2Client(accessToken)
   return google.calendar({ version: "v3", auth })
 }
+

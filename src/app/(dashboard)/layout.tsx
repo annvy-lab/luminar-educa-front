@@ -1,5 +1,5 @@
-import Footer from "@/src/_components/common/footer";
-import Navbar from "@/src/_components/common/navbar";
+import Footer from "@/_components/common/footer";
+import Navbar from "@/_components/common/navbar";
 
 export default function DashboardLayout({
   children,
@@ -18,3 +18,4 @@ export default function DashboardLayout({
     </div>
   );
 }
+

@@ -1,9 +1,9 @@
 import { ArrowLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 
-import { StudentRegistrationForm } from "@/src/_components/forms/student-registration-form";
-import { Button } from "@/src/_components/ui/button";
-import { Card, CardContent } from "@/src/_components/ui/card";
+import { StudentRegistrationForm } from "@/_components/forms/student-registration-form";
+import { Button } from "@/_components/ui/button";
+import { Card, CardContent } from "@/_components/ui/card";
 
 export default function StudentRegistrationPage() {
   return (
@@ -52,3 +52,4 @@ export default function StudentRegistrationPage() {
     </div>
   );
 }
+

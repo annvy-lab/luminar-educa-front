@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { USERS_MOCK } from "@/src/_lib/auth-mock";
+import { USERS_MOCK } from "@/_lib/auth-mock";
 
 export type Role = "professor" | "aluno";
 
@@ -76,3 +76,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+

@@ -1,9 +1,9 @@
-import { Search, MapPin, GraduationCap, Star, BookOpen } from "lucide-react";
+import { BookOpen, GraduationCap, MapPin, Search, Star } from "lucide-react";
 
-import { Input } from "@/src/_components/ui/input";
-import { Badge } from "@/src/_components/ui/badge";
-import { Card, CardContent } from "@/src/_components/ui/card";
-import { Button } from "@/src/_components/ui/button";
+import { Badge } from "@/_components/ui/badge";
+import { Button } from "@/_components/ui/button";
+import { Card, CardContent } from "@/_components/ui/card";
+import { Input } from "@/_components/ui/input";
 
 export default function SearchDashboardPage() {
   const professors = [
@@ -50,48 +50,52 @@ export default function SearchDashboardPage() {
   ];
 
   return (
-    <div className="flex min-h-screen w-full flex-col p-6 space-y-8 max-w-7xl mx-auto">
+    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col space-y-8 p-6">
       {/* Header Buscador */}
-      <div className="flex flex-col gap-4 mt-8">
+      <div className="mt-8 flex flex-col gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Encontre o <span className="text-primary">Professor</span> Ideal
         </h1>
-        <p className="text-muted-foreground text-sm max-w-2xl">
-          Navegue pela nossa rede de educadores verificados. Uma oportunidade para você aprender e para incríveis profissionais recém-formados mostrarem seu valor.
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Navegue pela nossa rede de educadores verificados. Uma oportunidade
+          para você aprender e para incríveis profissionais recém-formados
+          mostrarem seu valor.
         </p>
 
         <div className="mt-4 flex w-full max-w-xl items-center gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground shrink-0 size-4 pointer-events-none" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 shrink-0 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Busque por disciplina, área de atuação ou nome..."
-              className="pl-9 h-12 rounded-xl border-primary/20 bg-muted/20"
+              className="h-12 rounded-xl border-primary/20 bg-muted/20 pl-9"
             />
           </div>
-          <Button size="lg" className="rounded-xl px-8 h-12">
+          <Button size="lg" className="h-12 rounded-xl px-8">
             Buscar
           </Button>
         </div>
       </div>
 
       {/* Grid de Professores */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-6">
+      <div className="grid grid-cols-1 gap-6 pt-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {professors.map((prof) => (
-          <Card key={prof.id} className="border-primary/10 bg-gradient-to-b from-background to-muted/20 shadow-md flex flex-col hover:border-primary/30 transition-colors">
-            <CardContent className="p-5 flex flex-col h-full gap-4">
-              
-              <div className="flex gap-4 items-start">
+          <Card
+            key={prof.id}
+            className="flex flex-col border-primary/10 bg-gradient-to-b from-background to-muted/20 shadow-md transition-colors hover:border-primary/30"
+          >
+            <CardContent className="flex h-full flex-col gap-4 p-5">
+              <div className="flex items-start gap-4">
                 <img
                   src={prof.image}
                   alt={prof.name}
                   className="size-14 rounded-full border-2 border-primary/20 object-cover"
                 />
-                <div className="flex flex-col gap-1 items-start">
-                  <h3 className="font-semibold text-base leading-tight">
+                <div className="flex flex-col items-start gap-1">
+                  <h3 className="text-base leading-tight font-semibold">
                     {prof.name}
                   </h3>
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                  <div className="flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                     <BookOpen size={12} />
                     {prof.expertise}
                   </div>
@@ -99,7 +103,7 @@ export default function SearchDashboardPage() {
               </div>
 
               {prof.isRecentGrad && (
-                <div className="flex items-center gap-2 border border-primary/20 bg-primary/5 rounded-lg p-2 mt-2">
+                <div className="mt-2 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-2">
                   <GraduationCap size={16} className="text-primary" />
                   <span className="text-xs font-medium text-primary/90">
                     Recém-formado: oportunidade de ouro!
@@ -107,11 +111,11 @@ export default function SearchDashboardPage() {
                 </div>
               )}
 
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1 mt-2 line-clamp-4">
+              <p className="mt-2 line-clamp-4 flex-1 text-xs leading-relaxed text-muted-foreground">
                 {prof.bio}
               </p>
 
-              <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-border">
+              <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-1 font-medium text-foreground">
                     <Star size={14} className="fill-primary text-primary" />
@@ -123,11 +127,13 @@ export default function SearchDashboardPage() {
                   </div>
                 </div>
 
-                <Button variant="default" className="w-full relative shadow-sm h-9">
+                <Button
+                  variant="default"
+                  className="relative h-9 w-full shadow-sm"
+                >
                   Entrar em contato
                 </Button>
               </div>
-
             </CardContent>
           </Card>
         ))}

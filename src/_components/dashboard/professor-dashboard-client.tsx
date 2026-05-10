@@ -11,11 +11,11 @@ import {
 import Link from "next/link";
 import * as React from "react";
 
-import { Badge } from "@/src/_components/ui/badge";
-import { Button } from "@/src/_components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/_components/ui/card";
-import { Switch } from "@/src/_components/ui/switch";
-import { useAuth } from "@/src/_contexts/auth-context";
+import { Badge } from "@/_components/ui/badge";
+import { Button } from "@/_components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/_components/ui/card";
+import { Switch } from "@/_components/ui/switch";
+import { useAuth } from "@/_contexts/auth-context";
 
 export function ProfessorDashboardClient() {
   const { user } = useAuth();
@@ -159,3 +159,4 @@ export function ProfessorDashboardClient() {
     </div>
   );
 }
+

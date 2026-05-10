@@ -8,20 +8,20 @@ import * as React from "react";
 import { Controller, FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { Button } from "@/src/_components/ui/button";
-import { Input } from "@/src/_components/ui/input";
+import { Button } from "@/_components/ui/button";
+import { Input } from "@/_components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/_components/ui/select";
-import { cn } from "@/src/_lib/utils";
+} from "@/_components/ui/select";
+import { cn } from "@/_lib/utils";
 import {
   StudentRegistrationInput,
   studentRegistrationSchema,
-} from "@/src/_lib/validations/auth";
+} from "@/_lib/validations/auth";
 
 const formVariants = cva("flex flex-col gap-4", {
   variants: {
@@ -144,3 +144,4 @@ export function StudentRegistrationForm({
     </form>
   );
 }
+

@@ -1,9 +1,9 @@
 import { ArrowLeft, BookOpen, Flame, GraduationCap } from "lucide-react";
 import Link from "next/link";
 
-import { LoginForm } from "@/src/_components/forms/login-form";
-import { Button } from "@/src/_components/ui/button";
-import { Card, CardContent } from "@/src/_components/ui/card";
+import { LoginForm } from "@/_components/forms/login-form";
+import { Button } from "@/_components/ui/button";
+import { Card, CardContent } from "@/_components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/src/_components/ui/dialog";
+} from "@/_components/ui/dialog";
 
 export default function LoginPage() {
   return (
@@ -94,3 +94,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

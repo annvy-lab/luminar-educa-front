@@ -1,5 +1,5 @@
-import SearchBar from "@/src/_components/common/search-bar";
-import Title from "@/src/_components/common/title";
+import SearchBar from "@/_components/common/search-bar";
+import Title from "@/_components/common/title";
 
 const StudentHome = () => {
   return (
@@ -11,3 +11,4 @@ const StudentHome = () => {
 };
 
 export default StudentHome;
+

@@ -8,11 +8,11 @@ import * as React from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { Button } from "@/src/_components/ui/button";
-import { Input } from "@/src/_components/ui/input";
-import { useAuth } from "@/src/_contexts/auth-context";
-import { cn } from "@/src/_lib/utils";
-import { LoginInput, loginSchema } from "@/src/_lib/validations/auth";
+import { Button } from "@/_components/ui/button";
+import { Input } from "@/_components/ui/input";
+import { useAuth } from "@/_contexts/auth-context";
+import { cn } from "@/_lib/utils";
+import { LoginInput, loginSchema } from "@/_lib/validations/auth";
 
 const formVariants = cva("flex flex-col gap-4");
 
@@ -104,3 +104,4 @@ export function LoginForm({
     </form>
   );
 }
+

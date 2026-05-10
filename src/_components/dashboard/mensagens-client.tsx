@@ -4,10 +4,10 @@ import { Info, MessageCircle, Phone, Search, Send, Video, Smile, Paperclip, Mic,
 import * as React from "react";
 import { toast } from "sonner";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/src/_components/ui/avatar";
-import { Button } from "@/src/_components/ui/button";
-import { Input } from "@/src/_components/ui/input";
-import { useAuth } from "@/src/_contexts/auth-context";
+import { Avatar, AvatarFallback, AvatarImage } from "@/_components/ui/avatar";
+import { Button } from "@/_components/ui/button";
+import { Input } from "@/_components/ui/input";
+import { useAuth } from "@/_contexts/auth-context";
 
 export function MensagensClient() {
   const { user } = useAuth();
@@ -186,3 +186,4 @@ export function MensagensClient() {
     </div>
   );
 }
+

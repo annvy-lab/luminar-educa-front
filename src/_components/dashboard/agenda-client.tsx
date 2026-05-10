@@ -16,16 +16,16 @@ import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/src/_components/ui/avatar";
-import { Badge } from "@/src/_components/ui/badge";
-import { Button } from "@/src/_components/ui/button";
-import { Calendar } from "@/src/_components/ui/calendar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/_components/ui/avatar";
+import { Badge } from "@/_components/ui/badge";
+import { Button } from "@/_components/ui/button";
+import { Calendar } from "@/_components/ui/calendar";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/src/_components/ui/card";
+} from "@/_components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -33,8 +33,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/src/_components/ui/sheet";
-import { useAuth } from "@/src/_contexts/auth-context";
+} from "@/_components/ui/sheet";
+import { useAuth } from "@/_contexts/auth-context";
 
 export function AgendaClient() {
   const { user } = useAuth();
@@ -322,3 +322,4 @@ export function AgendaClient() {
     </div>
   );
 }
+

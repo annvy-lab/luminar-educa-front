@@ -2,10 +2,10 @@ import "./globals.css";
 
 import { Geist, Geist_Mono, Noto_Serif } from "next/font/google";
 
-import { ThemeProvider } from "@/src/_components/theme-provider";
-import { Toaster } from "@/src/_components/ui/sonner";
-import { AuthProvider } from "@/src/_contexts/auth-context";
-import { cn } from "@/src/_lib/utils";
+import { ThemeProvider } from "@/_components/theme-provider";
+import { Toaster } from "@/_components/ui/sonner";
+import { AuthProvider } from "@/_contexts/auth-context";
+import { cn } from "@/_lib/utils";
 
 import Footer from "../_components/common/footer";
 import Navbar from "../_components/common/navbar";
@@ -53,3 +53,4 @@ export default function RootLayout({
     </html>
   );
 }
+

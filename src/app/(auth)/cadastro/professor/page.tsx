@@ -1,9 +1,9 @@
 import { ArrowLeft, GraduationCap } from "lucide-react";
 import Link from "next/link";
 
-import { ProfessorRegistrationForm } from "@/src/_components/forms/professor-registration-form";
-import { Button } from "@/src/_components/ui/button";
-import { Card, CardContent } from "@/src/_components/ui/card";
+import { ProfessorRegistrationForm } from "@/_components/forms/professor-registration-form";
+import { Button } from "@/_components/ui/button";
+import { Card, CardContent } from "@/_components/ui/card";
 
 export default function ProfessorRegistrationPage() {
   return (
@@ -54,3 +54,4 @@ export default function ProfessorRegistrationPage() {
     </div>
   );
 }
+

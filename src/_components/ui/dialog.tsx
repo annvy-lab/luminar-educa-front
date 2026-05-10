@@ -3,8 +3,8 @@
 import * as React from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
-import { cn } from "@/src/_lib/utils"
-import { Button } from "@/src/_components/ui/button"
+import { cn } from "@/_lib/utils"
+import { Button } from "@/_components/ui/button"
 import { XIcon } from "lucide-react"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
@@ -155,3 +155,4 @@ export {
   DialogTitle,
   DialogTrigger,
 }
+

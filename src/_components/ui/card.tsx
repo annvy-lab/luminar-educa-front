@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cn } from "@/src/_lib/utils"
+import { cn } from "@/_lib/utils"
 
 function Card({
   className,
@@ -101,3 +101,4 @@ export {
   CardDescription,
   CardContent,
 }
+
