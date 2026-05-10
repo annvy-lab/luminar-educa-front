@@ -1,154 +1,82 @@
-import {
-  ArrowRight,
-  BookOpen,
-  Briefcase,
-  GraduationCap,
-  Sparkles,
-  Users,
-} from "lucide-react";
+"use client";
 
-import { Button } from "../_components/ui/button";
-import { Card, CardContent } from "../_components/ui/card";
+import { BookOpen, CalendarClock, CreditCard, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
+import { Badge } from "@/src/_components/ui/badge";
+import { Button } from "@/src/_components/ui/button";
+import { Card, CardContent } from "@/src/_components/ui/card";
+import { Input } from "@/src/_components/ui/input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/src/_components/ui/sheet";
+import { useAuth } from "@/src/_contexts/auth-context";
+import { TeacherListing } from "@/src/_types/platform";
+
+const teachers: TeacherListing[] = [
+  { id: "t1", name: "Ana Clara", bio: "Álgebra e geometria para ensino médio.", status: "APPROVED", hourlyRateCents: 8000, subjects: [{ id: "s1", name: "Matemática" }] },
+  { id: "t2", name: "Marcelo Souza", bio: "Redação e português para ENEM.", status: "APPROVED", hourlyRateCents: 9000, subjects: [{ id: "s2", name: "Linguagens" }] },
+];
 
 export default function Page() {
+  const { user } = useAuth();
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
+
   return (
-    <div className="flex-1 p-0">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pt-2 pb-10 lg:flex-row lg:items-center lg:justify-between">
-        <section className="flex max-w-2xl flex-col gap-6">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-muted/40 px-4 py-1.5 text-sm text-muted-foreground">
-            <Sparkles size={16} className="text-primary" strokeWidth={1.7} />
-            Novos professores, novas oportunidades!
-          </div>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8">
+      <section className="space-y-3">
+        <Badge className="w-fit bg-primary/10 text-primary hover:bg-primary/20"><Sparkles className="mr-1 size-4" /> Fluxo do Aluno</Badge>
+        <h1 className="text-4xl font-bold">Landing Page + Conteúdos</h1>
+        <p className="text-muted-foreground">Veja os conteúdos disponíveis e solicite aula somente após autenticação.</p>
+      </section>
 
-          <div className="space-y-4">
-            <h1 className="text-4xl leading-tight font-bold tracking-tight text-foreground lg:text-5xl">
-              Bem-vindo à <span className="text-primary">Luminar Educa...</span>
-            </h1>
-
-            <p className="max-w-xl text-base leading-7 text-muted-foreground lg:text-lg">
-              Uma plataforma feita para conectar professores recém-formados de
-              alunos que buscam ensino de qualidade, com mais praticidade,
-              visibilidade e oportunidade.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Card className="border-primary/10 shadow-sm">
-              <CardContent className="flex items-start gap-3 p-4 py-1">
-                <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                  <GraduationCap size={20} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    Professores em destaque
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Valorize profissionais em início de carreira com espaço para
-                    crescer.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardContent className="flex items-start gap-3 p-4 py-1">
-                <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                  <BookOpen size={20} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    Aprendizado prático
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Encontre apoio educacional com mais proximidade e confiança.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardContent className="flex items-start gap-3 p-4 py-1">
-                <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                  <Users size={20} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    Conexão real
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Aproximamos alunos, famílias e educadores em um só lugar.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardContent className="flex items-start gap-3 p-4 py-1">
-                <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                  <Briefcase size={20} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    Novas oportunidades
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Gere visibilidade para quem está começando na docência.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        <div className="w-full max-w-md">
-          <Card className="border-primary/10 bg-gradient-to-b from-background to-muted/30 shadow-md">
-            <CardContent className="flex flex-col gap-5 p-6">
-              <div className="space-y-2">
-                <h2 className="text-2xl font-semibold text-foreground">
-                  Seu próximo passo começa aqui
-                </h2>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Acesse sua conta para encontrar professores, oportunidades e
-                  conexões educacionais dentro da Luminar Educa.
-                </p>
+      <div className="grid gap-5 md:grid-cols-2">
+        {teachers.map((teacher) => (
+          <Card key={teacher.id} className="border-primary/10">
+            <CardContent className="space-y-4 p-5">
+              <div>
+                <h2 className="text-lg font-semibold">{teacher.name}</h2>
+                <p className="text-sm text-muted-foreground">{teacher.bio}</p>
               </div>
-
-              <div className="space-y-3 rounded-xl border bg-background/80 p-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-md bg-primary/10 p-2 text-primary">
-                    <GraduationCap size={18} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Para professores</p>
-                    <p className="text-xs text-muted-foreground">
-                      Ganhe visibilidade e encontre alunos.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="rounded-md bg-primary/10 p-2 text-primary">
-                    <BookOpen size={18} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Para alunos</p>
-                    <p className="text-xs text-muted-foreground">
-                      Descubra apoio educacional com facilidade.
-                    </p>
-                  </div>
-                </div>
+              <div className="flex flex-wrap gap-2">
+                {teacher.subjects.map((subject) => (
+                  <Badge key={subject.id} variant="outline">{subject.name}</Badge>
+                ))}
               </div>
-
-              <Button className="w-full gap-2" size="lg">
-                Entrar na Plataforma
-                <ArrowRight size={18} />
-              </Button>
+              <Sheet>
+                <SheetTrigger
+                  render={
+                    <Button className="w-full" disabled={!user} onClick={() => setSelectedSubject(teacher.subjects[0].name)}>
+                      Agendar {teacher.subjects[0].name}
+                    </Button>
+                  }
+                />
+                <SheetContent className="space-y-4">
+                  <SheetHeader>
+                    <SheetTitle>Solicitar aula • {selectedSubject}</SheetTitle>
+                  </SheetHeader>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Data da aula</label>
+                    <Input type="date" />
+                    <label className="text-sm font-medium">Horário</label>
+                    <Input type="time" />
+                    <label className="text-sm font-medium">Método de pagamento</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="outline"><CreditCard className="mr-2 size-4" /> Cartão</Button>
+                      <Button variant="outline">PIX</Button>
+                    </div>
+                    <Button className="w-full"><CalendarClock className="mr-2 size-4" /> Confirmar solicitação</Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+              {!user && <p className="text-xs text-amber-600">Faça login para agendar.</p>}
             </CardContent>
           </Card>
-        </div>
+        ))}
       </div>
-      <div className="font-mono text-xs text-muted-foreground">
-        {/* (Press <kbd>d</kbd> to toggle dark mode) */}
+
+      <div className="flex gap-3">
+        <Link href="/aluno/agendamentos"><Button variant="secondary"><BookOpen className="mr-2 size-4" /> Meus agendamentos</Button></Link>
+        <Link href="/professor/solicitacoes"><Button variant="outline">Fluxo do professor</Button></Link>
       </div>
     </div>
   );

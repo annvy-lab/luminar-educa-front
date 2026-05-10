@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cva } from "class-variance-authority";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { FieldErrors, useForm } from "react-hook-form";
@@ -101,6 +102,9 @@ export function LoginForm({
         {loading ? "Entrando..." : "Acessar Conta"}
         {!loading && <ArrowRight size={18} />}
       </Button>
+      <Link href="#" className="w-full">
+        <Button type="button" variant="outline" className="w-full">Entrar com Google (Aluno)</Button>
+      </Link>
     </form>
   );
 }

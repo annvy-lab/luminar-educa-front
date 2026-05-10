@@ -164,6 +164,13 @@ export function ProfessorRegistrationForm({
             )}
           />
         </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium leading-none">Comprovante de docência</label>
+          <Input type="file" accept=".pdf,.png,.jpg,.jpeg" />
+          <p className="text-xs text-muted-foreground">Envie diploma, declaração ou certificado para validação.</p>
+        </div>
+
       </div>
 
       <Button className="mt-4 w-full gap-2" size="lg" disabled={loading}>
