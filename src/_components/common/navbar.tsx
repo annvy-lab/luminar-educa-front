@@ -3,7 +3,6 @@
 import {
   Calendar,
   Flame,
-  GraduationCap,
   Home,
   LogIn,
   LogOut,
@@ -12,6 +11,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import * as React from "react";
+import { toast } from "sonner";
 
 import { useAuth } from "@/_contexts/auth-context";
 
@@ -24,9 +25,25 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+
+      await logout();
+
+      toast.success("Logout realizado com sucesso.");
+
+      router.replace("/");
+      router.refresh();
+    } catch {
+      toast.error("Erro ao sair", {
+        description: "Não foi possível encerrar sua sessão.",
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -55,7 +72,6 @@ const Navbar = () => {
 
             {user ? (
               <>
-                {/* Perfil */}
                 <div className="-mt-2 flex items-center gap-3 rounded-xl bg-muted/40 p-3">
                   <Avatar className="size-10">
                     <AvatarFallback className="bg-primary/20 font-bold text-primary">
@@ -71,7 +87,6 @@ const Navbar = () => {
                   </div>
                 </div>
 
-                {/* Navegação */}
                 <nav className="flex flex-col gap-1">
                   <Link href="/" className="w-full">
                     <Button
@@ -97,19 +112,6 @@ const Navbar = () => {
                     </Link>
                   )}
 
-                  {/* {user.role === "professor" && (
-                    <Link href="/painel-professor" className="w-full">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="w-full justify-start gap-4 py-5"
-                      >
-                        <GraduationCap size={18} />
-                        Painel do Professor
-                      </Button>
-                    </Link>
-                  )} */}
-
                   <Link href="/agenda" className="w-full">
                     <Button
                       type="button"
@@ -127,9 +129,10 @@ const Navbar = () => {
                     type="button"
                     onClick={handleLogout}
                     className="w-full gap-2"
+                    disabled={isLoggingOut}
                   >
                     <LogOut size={18} />
-                    Sair
+                    {isLoggingOut ? "Saindo..." : "Sair"}
                   </Button>
                 </div>
               </>

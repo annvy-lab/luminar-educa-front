@@ -47,7 +47,7 @@ export default function LoginPage() {
 
             <LoginForm />
 
-            <div className="mt-2 text-center text-sm text-muted-foreground">
+            {/* <div className="mt-2 text-center text-sm text-muted-foreground">
               Ainda não tem uma conta?{" "}
               <Dialog>
                 <DialogTrigger className="transition-colors hover:text-primary hover:underline focus:outline-none">
@@ -90,7 +90,7 @@ export default function LoginPage() {
                   </div>
                 </DialogContent>
               </Dialog>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
       </div>
