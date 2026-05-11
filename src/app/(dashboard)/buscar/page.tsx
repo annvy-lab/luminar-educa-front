@@ -40,21 +40,7 @@ export default function SearchDashboardPage() {
             name: subject.name,
             description: subject.description,
             iconSlug: subject.iconSlug,
-            createdAt: new Date(),
             teacherCount: subject.teacherCount,
-
-            // /api/subjects ainda não retorna professor.
-            teacher: {
-              name:
-                subject.teacherCount > 0
-                  ? `${subject.teacherCount} professor${
-                      subject.teacherCount === 1 ? "" : "es"
-                    } disponível${subject.teacherCount === 1 ? "" : "is"}`
-                  : "Nenhum professor disponível",
-              image: null,
-              bio: null,
-              availabilities: [],
-            },
           }),
         );
 

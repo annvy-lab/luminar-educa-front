@@ -1,11 +1,12 @@
 "use client";
 
+import { isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 
-import { BookingItem } from "@/_components/booking-item";
+import { Appointment, BookingItem } from "@/_components/booking-item";
 import Footer from "@/_components/common/footer";
 import Navbar from "@/_components/common/navbar";
 import { Calendar } from "@/_components/ui/calendar";
@@ -13,20 +14,139 @@ import { Card, CardContent } from "@/_components/ui/card";
 import { ScrollArea } from "@/_components/ui/scroll-area";
 import { useAuth } from "@/_contexts/auth-context";
 
-export type AppointmentStatus = "confirmado" | "pendente" | "concluido";
-
-export type Appointment = {
-  id: number;
-  name: string;
-  date: Date;
-  theme: string;
-  status: AppointmentStatus;
-  image: string;
+type BookingFromApi = {
+  id: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  totalAmountCents: number;
+  status: "SCHEDULED" | "ONGOING" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+  meetLink: string | null;
+  studentNotes: string | null;
+  student: {
+    id: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      avatarUrl: string | null;
+    };
+  };
+  teacher: {
+    id: string;
+    hourlyRateCents: number | null;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      avatarUrl: string | null;
+    };
+  };
+  subject: {
+    id: string;
+    name: string;
+    description: string | null;
+    iconSlug: string | null;
+  };
+  payment: {
+    id: string;
+    status: string;
+    method: string;
+    amountCents: number;
+    paidAt: string | null;
+  } | null;
 };
 
+function mapBookingToAppointment(
+  booking: BookingFromApi,
+  userRole: "aluno" | "professor" | "admin",
+): Appointment {
+  const person =
+    userRole === "professor" ? booking.student.user : booking.teacher.user;
+
+  return {
+    id: booking.id,
+    name: person.name,
+    date: new Date(booking.scheduledAt),
+    theme: booking.subject.name,
+    status: booking.status,
+    image: person.avatarUrl,
+    meetLink: booking.meetLink,
+    paymentStatus: booking.payment?.status ?? null,
+  };
+}
+
 export default function AgendaPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
   const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [appointments, setAppointments] = React.useState<Appointment[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!user) return;
+
+    async function loadBookings() {
+      try {
+        setIsLoadingBookings(true);
+
+        const response = await fetch("/api/bookings", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Erro ao buscar agendamentos.");
+        }
+
+        const formattedAppointments = data.bookings.map(
+          (booking: BookingFromApi) =>
+            mapBookingToAppointment(booking, user.role),
+        );
+
+        setAppointments(formattedAppointments);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Não foi possível carregar seus agendamentos.";
+
+        toast.error("Erro ao carregar agenda", {
+          description: message,
+        });
+      } finally {
+        setIsLoadingBookings(false);
+      }
+    }
+
+    loadBookings();
+  }, [user]);
+
+  const filteredAppointments = React.useMemo(() => {
+    if (!date) return appointments;
+
+    return appointments.filter((appointment) =>
+      isSameDay(appointment.date, date),
+    );
+  }, [appointments, date]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+
+        <main className="flex flex-1 items-center justify-center">
+          <p className="text-sm text-muted-foreground">
+            Carregando sua agenda...
+          </p>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -58,45 +178,6 @@ export default function AgendaPage() {
       </div>
     );
   }
-
-  const appointments: Appointment[] =
-    user.role === "professor"
-      ? [
-          {
-            id: 1,
-            name: "Lucas Fernandes",
-            date: new Date(),
-            theme: "Dúvidas de Cálculo I",
-            status: "confirmado",
-            image: "https://i.pravatar.cc/150?u=a042581f4e29026024e",
-          },
-          {
-            id: 2,
-            name: "Marina Costa",
-            date: new Date(new Date().setDate(new Date().getDate() + 1)),
-            theme: "Reforço de Geometria",
-            status: "pendente",
-            image: "https://i.pravatar.cc/150?u=a042581f4e29026024f",
-          },
-        ]
-      : [
-          {
-            id: 1,
-            name: "Ana Clara Silva",
-            date: new Date(),
-            theme: "Dúvidas de Cálculo I",
-            status: "confirmado",
-            image: "https://i.pravatar.cc/150?u=a042581f4e29026024a",
-          },
-          {
-            id: 2,
-            name: "Ricardo Mendes",
-            date: new Date(new Date().setDate(new Date().getDate() + 3)),
-            theme: "Revisão ENEM",
-            status: "concluido",
-            image: "https://i.pravatar.cc/150?u=a04258114e29026702d",
-          },
-        ];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -147,14 +228,23 @@ export default function AgendaPage() {
               <div className="col-span-6 flex flex-col gap-6 bg-transparent">
                 <ScrollArea className="h-[430px] border-0 bg-transparent">
                   <div className="flex flex-col gap-4 bg-transparent p-0.5 pr-3">
-                    {appointments.map((appointment) => (
-                      <BookingItem
-                        key={appointment.id}
-                        appointment={appointment}
-                      />
-                    ))}
-
-                    {appointments.length === 0 && (
+                    {isLoadingBookings ? (
+                      <>
+                        {Array.from({ length: 3 }).map((_, index) => (
+                          <div
+                            key={index}
+                            className="h-[150px] animate-pulse rounded-xl border bg-muted/30"
+                          />
+                        ))}
+                      </>
+                    ) : filteredAppointments.length > 0 ? (
+                      filteredAppointments.map((appointment) => (
+                        <BookingItem
+                          key={appointment.id}
+                          appointment={appointment}
+                        />
+                      ))
+                    ) : (
                       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/5 p-12 text-center">
                         <CalendarIcon
                           size={48}

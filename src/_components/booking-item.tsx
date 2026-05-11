@@ -9,24 +9,67 @@ import { Badge } from "@/_components/ui/badge";
 import { Button } from "@/_components/ui/button";
 import { Card, CardContent } from "@/_components/ui/card";
 
-type AppointmentStatus = "confirmado" | "pendente" | "concluido";
+type AppointmentStatus =
+  | "SCHEDULED"
+  | "ONGOING"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "NO_SHOW";
 
-type Appointment = {
-  id: number;
+export type Appointment = {
+  id: string;
   name: string;
   date: Date;
   theme: string;
   status: AppointmentStatus;
-  image: string;
+  image: string | null;
+  meetLink: string | null;
+  paymentStatus: string | null;
 };
 
 type BookingItemProps = {
   appointment: Appointment;
 };
 
+function getStatusLabel(status: AppointmentStatus) {
+  switch (status) {
+    case "SCHEDULED":
+      return "Agendado";
+    case "ONGOING":
+      return "Em andamento";
+    case "COMPLETED":
+      return "Finalizado";
+    case "CANCELLED":
+      return "Cancelado";
+    case "NO_SHOW":
+      return "Não compareceu";
+    default:
+      return status;
+  }
+}
+
+function getStatusVariant(
+  status: AppointmentStatus,
+): "default" | "secondary" | "outline" | "destructive" {
+  switch (status) {
+    case "SCHEDULED":
+      return "default";
+    case "ONGOING":
+      return "secondary";
+    case "COMPLETED":
+      return "outline";
+    case "CANCELLED":
+      return "destructive";
+    case "NO_SHOW":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+}
+
 export function BookingItem({ appointment }: BookingItemProps) {
-  const isConfirmed = appointment.status === "confirmado";
-  const isPending = appointment.status === "pendente";
+  const canJoinClass =
+    appointment.status === "SCHEDULED" || appointment.status === "ONGOING";
 
   return (
     <Card className="h-[150px] overflow-hidden border-primary/10 bg-muted/10 shadow-sm transition-colors hover:border-primary/30">
@@ -37,11 +80,13 @@ export function BookingItem({ appointment }: BookingItemProps) {
             <div className="min-w-0 flex-1 space-y-2">
               <div className="flex w-fit max-w-full flex-row items-center gap-2 text-sm text-foreground/90">
                 <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarImage src={appointment.image} />
-
-                  <AvatarFallback>
-                    <User size={16} className="text-muted-foreground" />
-                  </AvatarFallback>
+                  {appointment.image ? (
+                    <AvatarImage src={appointment.image} />
+                  ) : (
+                    <AvatarFallback>
+                      <User size={16} className="text-muted-foreground" />
+                    </AvatarFallback>
+                  )}
                 </Avatar>
 
                 <p className="line-clamp-1">{appointment.name}</p>
@@ -54,20 +99,23 @@ export function BookingItem({ appointment }: BookingItemProps) {
 
             <Badge
               className="w-fit shrink-0 rounded-full"
-              variant={
-                isConfirmed ? "default" : isPending ? "secondary" : "outline"
-              }
+              variant={getStatusVariant(appointment.status)}
             >
-              {isConfirmed
-                ? "Confirmado"
-                : isPending
-                  ? "Pendente"
-                  : "Finalizado"}
+              {getStatusLabel(appointment.status)}
             </Badge>
           </div>
 
           <div className="flex flex-wrap">
-            <Button className="gap-2 p-4" size="sm" disabled={!isConfirmed}>
+            <Button
+              className="gap-2 p-4"
+              size="sm"
+              disabled={!canJoinClass || !appointment.meetLink}
+              onClick={() => {
+                if (appointment.meetLink) {
+                  window.open(appointment.meetLink, "_blank");
+                }
+              }}
+            >
               <Video size={16} />
               Entrar na Aula
             </Button>
