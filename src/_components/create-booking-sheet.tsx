@@ -378,7 +378,7 @@ export function CreateBookingSheet({
     try {
       const scheduledAt = buildScheduledAt(selectedDate, selectedTime);
 
-      const response = await fetch("/api/bookings", {
+      const bookingResponse = await fetch("/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -389,18 +389,40 @@ export function CreateBookingSheet({
           subjectId: content.id,
           scheduledAt: scheduledAt.toISOString(),
           durationMinutes: 60,
-          paymentMethod,
         }),
       });
 
-      const data = await response.json();
+      const bookingData = await bookingResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao criar agendamento.");
+      if (!bookingResponse.ok) {
+        throw new Error(bookingData.error || "Erro ao criar agendamento.");
       }
 
-      toast.success("Agendamento solicitado com sucesso!", {
-        description: "Você poderá acompanhar o status na sua agenda.",
+      const paymentResponse = await fetch(
+        `/api/bookings/${bookingData.booking.id}/payment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            method: paymentMethod,
+            paymentConfirmed: true,
+          }),
+        },
+      );
+
+      const paymentData = await paymentResponse.json();
+
+      if (!paymentResponse.ok) {
+        throw new Error(paymentData.error || "Erro ao confirmar pagamento.");
+      }
+
+      toast.success("Agendamento realizado com sucesso!", {
+        description: paymentData.booking?.meetLink
+          ? "O link da aula já está disponível na sua agenda."
+          : "Pagamento confirmado. Você poderá acompanhar a aula na agenda.",
       });
 
       onOpenChange(false);

@@ -69,7 +69,14 @@ function getStatusVariant(
 
 export function BookingItem({ appointment }: BookingItemProps) {
   const canJoinClass =
-    appointment.status === "SCHEDULED" || appointment.status === "ONGOING";
+    (appointment.status === "SCHEDULED" || appointment.status === "ONGOING") &&
+    Boolean(appointment.meetLink);
+
+  const handleJoinClass = () => {
+    if (!appointment.meetLink) return;
+
+    window.open(appointment.meetLink, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <Card className="h-[150px] overflow-hidden border-primary/10 bg-muted/10 shadow-sm transition-colors hover:border-primary/30">
@@ -107,17 +114,14 @@ export function BookingItem({ appointment }: BookingItemProps) {
 
           <div className="flex flex-wrap">
             <Button
+              type="button"
               className="gap-2 p-4"
               size="sm"
-              disabled={!canJoinClass || !appointment.meetLink}
-              onClick={() => {
-                if (appointment.meetLink) {
-                  window.open(appointment.meetLink, "_blank");
-                }
-              }}
+              disabled={!canJoinClass}
+              onClick={handleJoinClass}
             >
               <Video size={16} />
-              Entrar na Aula
+              {appointment.meetLink ? "Entrar na Aula" : "Link indisponível"}
             </Button>
           </div>
         </div>

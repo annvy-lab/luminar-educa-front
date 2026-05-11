@@ -21,6 +21,7 @@ type BookingFromApi = {
   totalAmountCents: number;
   status: "SCHEDULED" | "ONGOING" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
   meetLink: string | null;
+  googleEventId?: string | null;
   studentNotes: string | null;
   student: {
     id: string;
@@ -78,7 +79,7 @@ function mapBookingToAppointment(
 export default function AgendaPage() {
   const { user, isLoading } = useAuth();
 
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [date, setDate] = React.useState<Date | undefined>();
   const [appointments, setAppointments] = React.useState<Appointment[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = React.useState(true);
 
@@ -101,12 +102,16 @@ export default function AgendaPage() {
           throw new Error(data.error || "Erro ao buscar agendamentos.");
         }
 
-        const formattedAppointments = data.bookings.map(
+        const formattedAppointments: Appointment[] = data.bookings.map(
           (booking: BookingFromApi) =>
             mapBookingToAppointment(booking, user.role),
         );
 
         setAppointments(formattedAppointments);
+
+        if (formattedAppointments.length > 0) {
+          setDate(formattedAppointments[0].date);
+        }
       } catch (error) {
         const message =
           error instanceof Error
