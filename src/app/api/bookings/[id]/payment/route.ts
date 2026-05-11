@@ -16,13 +16,13 @@ export async function POST(
     const { id } = await params;
     const body = await request.json();
     const { method, accessToken } = body as {
-      method: "PIX" | "CREDIT_CARD";
+      method: "PIX" | "CREDIT_CARD" | "DEBIT_CARD";
       accessToken?: string; // Token OAuth do Google para criar evento
     };
 
     if (!method) {
       return NextResponse.json(
-        { error: "Campo obrigatório: method (PIX ou CREDIT_CARD)" },
+        { error: "Campo obrigatório: method (PIX, CREDIT_CARD ou DEBIT_CARD)" },
         { status: 400 },
       );
     }
