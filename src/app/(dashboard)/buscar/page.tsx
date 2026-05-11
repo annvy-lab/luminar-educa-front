@@ -1,64 +1,80 @@
+"use client";
+
 import { BookOpen } from "lucide-react";
+import * as React from "react";
+import { toast } from "sonner";
 
 import Footer from "@/_components/common/footer";
 import Navbar from "@/_components/common/navbar";
 import { ContentCard, ContentItem } from "@/_components/content-item";
 
+type SubjectFromApi = {
+  id: string;
+  name: string;
+  description: string | null;
+  iconSlug: string | null;
+  teacherCount: number;
+};
+
 export default function SearchDashboardPage() {
-  const subjects: ContentItem[] = [
-    {
-      id: "1",
-      name: "Matemática",
-      description:
-        "Conteúdos de álgebra, geometria, funções, estatística e resolução de problemas. Conteúdos de álgebra, geometria, funções, estatística e resolução de problemas. Conteúdos de álgebra, geometria, funções, estatística e resolução de problemas.",
-      iconSlug: "matematica",
-      createdAt: new Date(),
-      teacher: {
-        name: "Ana Clara Silva",
-        image: "https://i.pravatar.cc/150?u=ana-clara",
-        bio: "Professora com foco em matemática básica, reforço escolar e preparação para avaliações.",
-      },
-    },
-    {
-      id: "2",
-      name: "Letras e Idiomas",
-      description:
-        "Conteúdos de gramática, interpretação textual, redação, literatura e idiomas.",
-      iconSlug: "letras",
-      createdAt: new Date(),
-      teacher: {
-        name: "Marcelo Souza",
-        image: "https://i.pravatar.cc/150?u=marcelo-souza",
-        bio: "Professor voltado para redação, interpretação de texto e desenvolvimento da escrita.",
-      },
-    },
-    {
-      id: "3",
-      name: "Ciências da Natureza",
-      description:
-        "Conteúdos de biologia, física, química, meio ambiente e experimentação científica.",
-      iconSlug: "ciencias",
-      createdAt: new Date(),
-      teacher: {
-        name: "Beatriz Oliveira",
-        image: "https://i.pravatar.cc/150?u=beatriz-oliveira",
-        bio: "Professora de ciências com abordagem prática e linguagem simples.",
-      },
-    },
-    {
-      id: "4",
-      name: "Ciências Humanas",
-      description:
-        "Conteúdos de história, geografia, sociologia, filosofia e atualidades.",
-      iconSlug: "humanas",
-      createdAt: new Date(),
-      teacher: {
-        name: "Ricardo Mendes",
-        image: "https://i.pravatar.cc/150?u=ricardo-mendes",
-        bio: "Professor focado em história, sociedade, atualidades e preparação para provas.",
-      },
-    },
-  ];
+  const [subjects, setSubjects] = React.useState<ContentItem[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadSubjects() {
+      try {
+        const response = await fetch("/api/subjects", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Erro ao buscar conteúdos.");
+        }
+
+        const formattedSubjects: ContentItem[] = data.subjects.map(
+          (subject: SubjectFromApi) => ({
+            id: subject.id,
+            name: subject.name,
+            description: subject.description,
+            iconSlug: subject.iconSlug,
+            createdAt: new Date(),
+            teacherCount: subject.teacherCount,
+
+            // /api/subjects ainda não retorna professor.
+            teacher: {
+              name:
+                subject.teacherCount > 0
+                  ? `${subject.teacherCount} professor${
+                      subject.teacherCount === 1 ? "" : "es"
+                    } disponível${subject.teacherCount === 1 ? "" : "is"}`
+                  : "Nenhum professor disponível",
+              image: null,
+              bio: null,
+              availabilities: [],
+            },
+          }),
+        );
+
+        setSubjects(formattedSubjects);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Não foi possível carregar os conteúdos.";
+
+        toast.error("Erro ao carregar conteúdos", {
+          description: message,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadSubjects();
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -84,11 +100,28 @@ export default function SearchDashboardPage() {
             </div>
           </section>
 
-          <section className="grid grid-cols-1 items-stretch gap-6 pt-8 md:grid-cols-2 lg:grid-cols-3">
-            {subjects.map((subject) => (
-              <ContentCard key={subject.id} content={subject} />
-            ))}
-          </section>
+          {isLoading ? (
+            <section className="grid grid-cols-1 items-stretch gap-6 pt-8 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-[300px] animate-pulse rounded-xl border bg-muted/30"
+                />
+              ))}
+            </section>
+          ) : subjects.length > 0 ? (
+            <section className="grid grid-cols-1 items-stretch gap-6 pt-8 md:grid-cols-2 lg:grid-cols-3">
+              {subjects.map((subject) => (
+                <ContentCard key={subject.id} content={subject} />
+              ))}
+            </section>
+          ) : (
+            <div className="mt-8 rounded-xl border border-dashed bg-muted/20 p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                Nenhum conteúdo disponível no momento.
+              </p>
+            </div>
+          )}
         </div>
       </main>
 
