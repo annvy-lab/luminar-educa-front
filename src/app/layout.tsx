@@ -2,13 +2,10 @@ import "./globals.css";
 
 import { Geist, Geist_Mono, Noto_Serif } from "next/font/google";
 
-import { ThemeProvider } from "@/_components/theme-provider";
+import { ThemeProvider } from "@/_components/common/theme-provider";
 import { Toaster } from "@/_components/ui/sonner";
 import { AuthProvider } from "@/_contexts/auth-context";
 import { cn } from "@/_lib/utils";
-
-import Footer from "../_components/common/footer";
-import Navbar from "../_components/common/navbar";
 
 const notoSerif = Noto_Serif({ subsets: ["latin"], variable: "--font-serif" });
 
@@ -42,15 +39,10 @@ export default function RootLayout({
     >
       <body>
         <AuthProvider>
-          <ThemeProvider>
-            <Navbar />
-            {children}
-            <Footer />
-            <Toaster />
-          </ThemeProvider>
+          <Toaster />
+          <ThemeProvider>{children}</ThemeProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
-

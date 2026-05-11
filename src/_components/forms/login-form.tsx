@@ -71,8 +71,8 @@ export function LoginForm({
       onSubmit={handleSubmit(onSubmit, onError)}
     >
       <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             E-mail
           </label>
           <Input
@@ -82,8 +82,8 @@ export function LoginForm({
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Senha
           </label>
           <Input
@@ -91,17 +91,18 @@ export function LoginForm({
             placeholder="••••••••"
             {...register("password")}
           />
-          <p className="text-xs text-muted-foreground text-right">
-            Dica: senha123
-          </p>
         </div>
       </div>
 
-      <Button type="submit" className="mt-4 w-full gap-2" size="lg" disabled={loading}>
+      <Button
+        type="submit"
+        className="mt-4 w-full gap-2"
+        size="lg"
+        disabled={loading}
+      >
         {loading ? "Entrando..." : "Acessar Conta"}
         {!loading && <ArrowRight size={18} />}
       </Button>
     </form>
   );
 }
-

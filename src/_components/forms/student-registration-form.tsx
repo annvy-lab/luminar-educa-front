@@ -5,18 +5,11 @@ import { cva } from "class-variance-authority";
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Controller, FieldErrors, useForm } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/_components/ui/button";
 import { Input } from "@/_components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/_components/ui/select";
 import { cn } from "@/_lib/utils";
 import {
   StudentRegistrationInput,
@@ -49,7 +42,7 @@ export function StudentRegistrationForm({
         password: "",
         academicNeed: "",
       },
-    }
+    },
   );
 
   const onSubmit = (data: StudentRegistrationInput) => {
@@ -69,7 +62,7 @@ export function StudentRegistrationForm({
 
   const onError = (errors: FieldErrors<StudentRegistrationInput>) => {
     const firstErrorKey = Object.keys(
-      errors
+      errors,
     )[0] as keyof StudentRegistrationInput;
     const firstErrorMessage = errors[firstErrorKey]?.message;
     if (firstErrorMessage) {
@@ -85,15 +78,15 @@ export function StudentRegistrationForm({
       onSubmit={handleSubmit(onSubmit, onError)}
     >
       <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Nome Completo
           </label>
           <Input placeholder="Digite seu nome" {...register("name")} />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             E-mail
           </label>
           <Input
@@ -103,36 +96,14 @@ export function StudentRegistrationForm({
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Senha
           </label>
           <Input
             type="password"
             placeholder="••••••••"
             {...register("password")}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Necessidade Acadêmica Principal
-          </label>
-          <Controller
-            control={control}
-            name="academicNeed"
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value || ""}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Qual seu maior objetivo?" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="reforco">Reforço diário</SelectItem>
-                  <SelectItem value="duvidas">Tirar dúvidas pontuais</SelectItem>
-                  <SelectItem value="provas">Preparação para provas</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
           />
         </div>
       </div>
@@ -144,4 +115,3 @@ export function StudentRegistrationForm({
     </form>
   );
 }
-

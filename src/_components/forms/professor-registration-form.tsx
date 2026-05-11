@@ -2,21 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cva } from "class-variance-authority";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Controller, FieldErrors, useForm } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/_components/ui/button";
 import { Input } from "@/_components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/_components/ui/select";
 import { cn } from "@/_lib/utils";
 import {
   ProfessorRegistrationInput,
@@ -38,39 +31,71 @@ export function ProfessorRegistrationForm({
   className,
 }: React.HTMLAttributes<HTMLFormElement>) {
   const router = useRouter();
-  const [loading, setLoading] = React.useState(false);
 
-  const { register, handleSubmit, control } =
-    useForm<ProfessorRegistrationInput>({
-      resolver: zodResolver(professorRegistrationSchema),
-      defaultValues: {
-        name: "",
-        email: "",
-        password: "",
-        fieldOfExpertise: "",
-        graduationTime: "",
-      },
-    });
+  const [loading, setLoading] = React.useState(false);
+  const [fieldOfExpertise, setFieldOfExpertise] = React.useState("");
+  const [documentFile, setDocumentFile] = React.useState<File | null>(null);
+
+  const { register, handleSubmit } = useForm<ProfessorRegistrationInput>({
+    resolver: zodResolver(professorRegistrationSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      graduationTime: "",
+    },
+  });
 
   const onSubmit = (data: ProfessorRegistrationInput) => {
+    if (!documentFile) {
+      toast.error("Documento obrigatório", {
+        description:
+          "Anexe um documento que comprove sua atuação na área antes de continuar.",
+      });
+
+      return;
+    }
+
     setLoading(true);
+
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+
+    if (data.graduationTime) {
+      formData.append("graduationTime", data.graduationTime);
+    }
+
+    formData.append("document", documentFile);
+
+    // Área de atuação é apenas visual, então não é enviada.
+    console.log("Área selecionada apenas para exibição:", fieldOfExpertise);
 
     // Simula uma requisição para o backend
     setTimeout(() => {
       setLoading(false);
+
       console.log("Dados Validados do Professor:", data);
+      console.log("Arquivo anexado:", documentFile);
+      console.log("FormData:", formData);
+
       toast.success("Cadastro realizado com sucesso!", {
         description: "Seja bem-vindo(a) à Luminar Educa.",
       });
+
       router.push("/");
     }, 1500);
   };
 
   const onError = (errors: FieldErrors<ProfessorRegistrationInput>) => {
     const firstErrorKey = Object.keys(
-      errors
+      errors,
     )[0] as keyof ProfessorRegistrationInput;
+
     const firstErrorMessage = errors[firstErrorKey]?.message;
+
     if (firstErrorMessage) {
       toast.error("Erro de validação", {
         description: firstErrorMessage,
@@ -84,17 +109,19 @@ export function ProfessorRegistrationForm({
       onSubmit={handleSubmit(onSubmit, onError)}
     >
       <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Nome Completo
           </label>
+
           <Input placeholder="Digite seu nome" {...register("name")} />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             E-mail
           </label>
+
           <Input
             type="email"
             placeholder="seu.email@exemplo.com"
@@ -102,10 +129,11 @@ export function ProfessorRegistrationForm({
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Senha
           </label>
+
           <Input
             type="password"
             placeholder="••••••••"
@@ -113,56 +141,50 @@ export function ProfessorRegistrationForm({
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Área de Atuação
+        <div className="flex flex-col gap-2">
+          <label className="mb-1 text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Comprovante de Atuação
           </label>
-          <Controller
-            control={control}
-            name="fieldOfExpertise"
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value || ""}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione sua área" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="matematica">Matemática</SelectItem>
-                  <SelectItem value="letras">Letras e Idiomas</SelectItem>
-                  <SelectItem value="ciencias">Ciências da Natureza</SelectItem>
-                  <SelectItem value="humanas">Ciências Humanas</SelectItem>
-                  <SelectItem value="outro">Outra Área</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-          <p className="text-xs text-muted-foreground">
-            Destaque-se na plataforma, independente de sua formação inicial.
-          </p>
-        </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Tempo de Formação
+          <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/30 px-4 py-6 text-center transition-colors hover:border-primary hover:bg-primary/5">
+            <div className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Upload size={22} />
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                {documentFile
+                  ? documentFile.name
+                  : "Clique para anexar seu documento"}
+              </p>
+
+              <p className="text-xs text-muted-foreground">
+                Envie diploma, declaração, certificado ou outro comprovante em
+                PDF, JPG ou PNG.
+              </p>
+            </div>
+
+            <Input
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+
+                if (!file) {
+                  setDocumentFile(null);
+                  return;
+                }
+
+                setDocumentFile(file);
+              }}
+            />
           </label>
-          <Controller
-            control={control}
-            name="graduationTime"
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value || ""}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tempo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="estudante">Ainda estudando</SelectItem>
-                  <SelectItem value="recem-formado">
-                    Recém-formado (até 1 ano)
-                  </SelectItem>
-                  <SelectItem value="1-3-anos">1 a 3 anos</SelectItem>
-                  <SelectItem value="mais-3-anos">Mais de 3 anos</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
+
+          <p className="text-xs text-muted-foreground">
+            Esse documento será usado para análise e aprovação do perfil do
+            professor.
+          </p>
         </div>
       </div>
 
@@ -173,4 +195,3 @@ export function ProfessorRegistrationForm({
     </form>
   );
 }
-
