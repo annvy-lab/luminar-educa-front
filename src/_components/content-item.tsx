@@ -104,10 +104,6 @@ export function ContentCard({ content }: ContentCardProps) {
                     } disponível${content.teacherCount === 1 ? "" : "is"}`
                   : "Nenhum professor disponível"}
               </p>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Escolha um professor e horário no agendamento.
-              </p>
             </div>
           </div>
 

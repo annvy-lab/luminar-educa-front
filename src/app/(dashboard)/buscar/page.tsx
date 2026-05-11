@@ -8,12 +8,29 @@ import Footer from "@/_components/common/footer";
 import Navbar from "@/_components/common/navbar";
 import { ContentCard, ContentItem } from "@/_components/content-item";
 
-type SubjectFromApi = {
-  id: string;
-  name: string;
-  description: string | null;
-  iconSlug: string | null;
-  teacherCount: number;
+type SubjectTeacherFromApi = {
+  level: string | null;
+  subject: {
+    id: string;
+    name: string;
+    description: string | null;
+    iconSlug: string | null;
+  };
+  teacher: {
+    id: string;
+    bio: string | null;
+    hourlyRateCents: number | null;
+    user: {
+      id: string;
+      name: string;
+      avatarUrl: string | null;
+    };
+    stats: {
+      averageRating: number | null;
+      totalReviews: number;
+      completedBookings: number;
+    };
+  };
 };
 
 export default function SearchDashboardPage() {
@@ -23,7 +40,7 @@ export default function SearchDashboardPage() {
   React.useEffect(() => {
     async function loadSubjects() {
       try {
-        const response = await fetch("/api/subjects", {
+        const response = await fetch("/api/subject-teachers", {
           method: "GET",
           cache: "no-store",
         });
@@ -34,17 +51,30 @@ export default function SearchDashboardPage() {
           throw new Error(data.error || "Erro ao buscar conteúdos.");
         }
 
-        const formattedSubjects: ContentItem[] = data.subjects.map(
-          (subject: SubjectFromApi) => ({
-            id: subject.id,
-            name: subject.name,
-            description: subject.description,
-            iconSlug: subject.iconSlug,
-            teacherCount: subject.teacherCount,
-          }),
-        );
+        const subjectMap = new Map<string, ContentItem>();
 
-        setSubjects(formattedSubjects);
+        (data.subjectTeachers ?? []).forEach((item: SubjectTeacherFromApi) => {
+          const currentSubject = subjectMap.get(item.subject.id);
+
+          if (currentSubject) {
+            subjectMap.set(item.subject.id, {
+              ...currentSubject,
+              teacherCount: (currentSubject.teacherCount ?? 0) + 1,
+            });
+
+            return;
+          }
+
+          subjectMap.set(item.subject.id, {
+            id: item.subject.id,
+            name: item.subject.name,
+            description: item.subject.description,
+            iconSlug: item.subject.iconSlug,
+            teacherCount: 1,
+          });
+        });
+
+        setSubjects(Array.from(subjectMap.values()));
       } catch (error) {
         const message =
           error instanceof Error

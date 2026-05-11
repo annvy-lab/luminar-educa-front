@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, QrCode, User } from "lucide-react";
+import { Banknote, CreditCard, QrCode, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
@@ -8,38 +8,64 @@ import { toast } from "sonner";
 import { ContentItem } from "@/_components/content-item";
 import { Avatar, AvatarFallback, AvatarImage } from "@/_components/ui/avatar";
 import { Button } from "@/_components/ui/button";
-import { Calendar } from "@/_components/ui/calendar";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/_components/ui/sheet";
 
-type PaymentMethod = "PIX" | "CREDIT_CARD";
+type PaymentMethod = "PIX" | "CREDIT_CARD" | "DEBIT_CARD";
 
 type TeacherAvailability = {
   id: string;
-  teacherId: string;
   dayOfWeek: number | null;
   specificDate: string | Date | null;
   startTime: string;
   endTime: string;
   isRecurring: boolean;
-  createdAt?: string | Date;
 };
 
 type TeacherForSubject = {
   id: string;
   name: string;
-  email?: string;
   avatarUrl?: string | null;
-  image?: string | null;
   bio?: string | null;
   hourlyRateCents: number | null;
+  level?: string | null;
+  stats?: {
+    averageRating: number | null;
+    totalReviews: number;
+    completedBookings: number;
+  };
   availabilities: TeacherAvailability[];
+};
+
+type SubjectTeacherFromApi = {
+  level: string | null;
+  subject: {
+    id: string;
+    name: string;
+    description: string | null;
+    iconSlug: string | null;
+  };
+  teacher: {
+    id: string;
+    bio: string | null;
+    hourlyRateCents: number | null;
+    user: {
+      id: string;
+      name: string;
+      avatarUrl: string | null;
+    };
+    availabilities: TeacherAvailability[];
+    stats: {
+      averageRating: number | null;
+      totalReviews: number;
+      completedBookings: number;
+    };
+  };
 };
 
 type CreateBookingSheetProps = {
@@ -68,6 +94,12 @@ const paymentMethods: PaymentMethodOption[] = [
     description: "Pague com cartão de crédito.",
     icon: CreditCard,
   },
+  {
+    value: "DEBIT_CARD",
+    title: "Cartão de débito",
+    description: "Pague diretamente com cartão de débito.",
+    icon: Banknote,
+  },
 ];
 
 function formatPrice(value?: number | null) {
@@ -80,11 +112,81 @@ function formatPrice(value?: number | null) {
 }
 
 function getDateKey(date: Date) {
-  return date.toISOString().split("T")[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getSpecificDateKey(date: string | Date) {
+  if (typeof date === "string") {
+    return date.split("T")[0];
+  }
+
+  return getDateKey(date);
 }
 
 function getDayOfWeek(date: Date) {
   return date.getDay();
+}
+
+function isSameDate(dateA: Date, dateB: Date) {
+  return getDateKey(dateA) === getDateKey(dateB);
+}
+
+function formatAvailableDate(date: Date) {
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    weekday: "short",
+  });
+}
+
+function generateAvailableDates(availabilities: TeacherAvailability[]) {
+  const dates: Date[] = [];
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  const specificDates = availabilities
+    .filter(
+      (availability) => !availability.isRecurring && availability.specificDate,
+    )
+    .map((availability) => {
+      const date = new Date(availability.specificDate!);
+      date.setHours(0, 0, 0, 0);
+
+      return date;
+    })
+    .filter((date) => date >= today);
+
+  dates.push(...specificDates);
+
+  const recurringAvailabilities = availabilities.filter(
+    (availability) =>
+      availability.isRecurring && availability.dayOfWeek !== null,
+  );
+
+  for (let index = 0; index < 30; index++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + index);
+    date.setHours(0, 0, 0, 0);
+
+    const hasAvailability = recurringAvailabilities.some(
+      (availability) => availability.dayOfWeek === date.getDay(),
+    );
+
+    if (hasAvailability) {
+      dates.push(date);
+    }
+  }
+
+  const uniqueDates = Array.from(
+    new Map(dates.map((date) => [getDateKey(date), date])).values(),
+  );
+
+  return uniqueDates.sort((dateA, dateB) => dateA.getTime() - dateB.getTime());
 }
 
 function generateTimeSlots(startTime: string, endTime: string) {
@@ -144,6 +246,12 @@ export function CreateBookingSheet({
     (teacher) => teacher.id === selectedTeacherId,
   );
 
+  const availableDates = React.useMemo(() => {
+    if (!selectedTeacher) return [];
+
+    return generateAvailableDates(selectedTeacher.availabilities);
+  }, [selectedTeacher]);
+
   const selectedDateAvailabilities = React.useMemo(() => {
     if (!selectedDate || !selectedTeacher) return [];
 
@@ -157,7 +265,7 @@ export function CreateBookingSheet({
 
       if (availability.specificDate) {
         return (
-          getDateKey(new Date(availability.specificDate)) === selectedDateKey
+          getSpecificDateKey(availability.specificDate) === selectedDateKey
         );
       }
 
@@ -187,11 +295,14 @@ export function CreateBookingSheet({
       setIsLoadingTeachers(true);
 
       try {
-        const response = await fetch(`/api/subjects/${content.id}/teachers`, {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        });
+        const response = await fetch(
+          `/api/subject-teachers?subjectId=${content.id}`,
+          {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+          },
+        );
 
         const data = await response.json();
 
@@ -199,7 +310,20 @@ export function CreateBookingSheet({
           throw new Error(data.error || "Erro ao buscar professores.");
         }
 
-        setTeachers(data.teachers ?? []);
+        const formattedTeachers: TeacherForSubject[] = (
+          data.subjectTeachers ?? []
+        ).map((item: SubjectTeacherFromApi) => ({
+          id: item.teacher.id,
+          name: item.teacher.user.name,
+          avatarUrl: item.teacher.user.avatarUrl,
+          bio: item.teacher.bio,
+          hourlyRateCents: item.teacher.hourlyRateCents,
+          level: item.level,
+          stats: item.teacher.stats,
+          availabilities: item.teacher.availabilities ?? [],
+        }));
+
+        setTeachers(formattedTeachers);
       } catch (error) {
         const message =
           error instanceof Error
@@ -233,7 +357,7 @@ export function CreateBookingSheet({
     setSelectedTime("");
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
+  const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
     setSelectedTime("");
   };
@@ -337,7 +461,7 @@ export function CreateBookingSheet({
                 <div className="grid gap-3">
                   {teachers.map((teacher) => {
                     const isSelected = selectedTeacherId === teacher.id;
-                    const image = teacher.avatarUrl ?? teacher.image;
+                    const hasAvailabilities = teacher.availabilities.length > 0;
 
                     return (
                       <Button
@@ -349,8 +473,8 @@ export function CreateBookingSheet({
                       >
                         <div className="flex min-w-0 items-center gap-3">
                           <Avatar className="size-10 shrink-0">
-                            {image ? (
-                              <AvatarImage src={image} />
+                            {teacher.avatarUrl ? (
+                              <AvatarImage src={teacher.avatarUrl} />
                             ) : (
                               <AvatarFallback>
                                 <User size={16} />
@@ -371,6 +495,31 @@ export function CreateBookingSheet({
                               }
                             >
                               {formatPrice(teacher.hourlyRateCents)}
+                              {teacher.level ? ` · ${teacher.level}` : ""}
+                            </p>
+
+                            <p
+                              className={
+                                isSelected
+                                  ? "text-xs text-primary-foreground/80"
+                                  : "text-xs text-muted-foreground"
+                              }
+                            >
+                              {teacher.stats?.averageRating
+                                ? `⭐ ${teacher.stats.averageRating} · ${teacher.stats.totalReviews} avaliação${
+                                    teacher.stats.totalReviews === 1
+                                      ? ""
+                                      : "ões"
+                                  }`
+                                : "Sem avaliações"}
+                              {" · "}
+                              {hasAvailabilities
+                                ? `${teacher.availabilities.length} disponibilidade${
+                                    teacher.availabilities.length === 1
+                                      ? ""
+                                      : "s"
+                                  }`
+                                : "Sem horários"}
                             </p>
                           </div>
                         </div>
@@ -388,15 +537,34 @@ export function CreateBookingSheet({
             <div className="flex flex-col gap-3">
               <h2 className="text-base font-medium">Selecione o dia:</h2>
 
-              <div className="rounded-xl border">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  disabled={!selectedTeacher}
-                  className="w-full font-sans"
-                />
-              </div>
+              {!selectedTeacher ? (
+                <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                  Selecione um professor para visualizar os dias disponíveis.
+                </div>
+              ) : availableDates.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {availableDates.map((availableDate) => {
+                    const isSelected =
+                      selectedDate && isSameDate(selectedDate, availableDate);
+
+                    return (
+                      <Button
+                        key={getDateKey(availableDate)}
+                        type="button"
+                        variant={isSelected ? "default" : "outline"}
+                        onClick={() => handleDateSelect(availableDate)}
+                        className="h-12 rounded-xl capitalize"
+                      >
+                        {formatAvailableDate(availableDate)}
+                      </Button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                  Este professor ainda não possui dias disponíveis.
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-3">
@@ -405,6 +573,10 @@ export function CreateBookingSheet({
               {!selectedTeacher ? (
                 <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
                   Selecione um professor para visualizar horários.
+                </div>
+              ) : selectedTeacher.availabilities.length === 0 ? (
+                <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                  Este professor ainda não possui horários disponíveis.
                 </div>
               ) : selectedDate ? (
                 schedules.length > 0 ? (
@@ -474,15 +646,14 @@ export function CreateBookingSheet({
           </div>
 
           <div className="mt-auto flex w-full items-center gap-3">
-            <SheetClose>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 rounded-full px-6"
-              >
-                Cancelar
-              </Button>
-            </SheetClose>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 rounded-full px-6"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancelar
+            </Button>
 
             <Button
               type="submit"
