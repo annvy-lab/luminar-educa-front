@@ -60,6 +60,17 @@ export async function GET(request: NextRequest) {
                 avatarUrl: true,
               },
             },
+            availabilities: {
+              select: {
+                id: true,
+                dayOfWeek: true,
+                specificDate: true,
+                startTime: true,
+                endTime: true,
+                isRecurring: true,
+              },
+              orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
+            },
             _count: {
               select: {
                 reviews: {
@@ -99,6 +110,7 @@ export async function GET(request: NextRequest) {
             bio: ts.teacher.bio,
             hourlyRateCents: ts.teacher.hourlyRateCents,
             user: ts.teacher.user,
+            availabilities: ts.teacher.availabilities,
             stats: {
               averageRating: avgRating._avg.rating
                 ? Number(avgRating._avg.rating.toFixed(1))
